@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Construction Operations Framework</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #ffffff;
+      font-family: Georgia, 'Times New Roman', serif;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px 80px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 56px;
+      max-width: 640px;
+    }
+
+    header h1 {
+      font-size: 26px;
+      font-weight: normal;
+      letter-spacing: 0.01em;
+      line-height: 1.3;
+      color: #111;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      font-size: 15px;
+      color: #666;
+      font-style: italic;
+      line-height: 1.6;
+    }
+
+    .framework {
+      width: 100%;
+      max-width: 860px;
+    }
+
+    /* ── PRESSURE POINTS ROW ── */
+    .pressure-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .pressure-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 18px 14px 16px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      position: relative;
+      background: #fff;
+    }
+
+    .pressure-card:hover {
+      border-color: #999;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      transform: translateY(-2px);
+    }
+
+    .pressure-card.active {
+      border-color: #1a1a1a;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .pressure-card .tag {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-family: Georgia, serif;
+      color: #999;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .pressure-card.risk-operational .tag { color: #b94a2c; }
+    .pressure-card.risk-financial   .tag { color: #8a6200; }
+    .pressure-card.risk-regulatory  .tag { color: #3d4f8a; }
+
+    .pressure-card h3 {
+      font-size: 13.5px;
+      font-weight: normal;
+      font-style: italic;
+      line-height: 1.4;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+
+    .pressure-card p {
+      font-size: 12px;
+      color: #777;
+      line-height: 1.55;
+    }
+
+    .pressure-card .indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      position: absolute;
+      top: 14px;
+      right: 14px;
+    }
+
+    .risk-operational .indicator { background: #d9562f; }
+    .risk-financial   .indicator { background: #c48a00; }
+    .risk-regulatory  .indicator { background: #4a5fa8; }
+
+    /* ── CONNECTOR LINES ── */
+    .connector-area {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      height: 40px;
+      position: relative;
+      margin-bottom: 0;
+    }
+
+    .connector-area svg {
+      width: 100%;
+      height: 40px;
+      overflow: visible;
+    }
+
+    /* ── HUB ── */
+    .hub-row {
+      display: flex;
+      justify-content: center;
+      margin: 0 0 28px;
+    }
+
+    .hub {
+      border: 1.5px solid #1a1a1a;
+      border-radius: 4px;
+      padding: 22px 48px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+      background: #fff;
+      min-width: 340px;
+    }
+
+    .hub:hover {
+      background: #f9f9f9;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+    }
+
+    .hub h2 {
+      font-size: 17px;
+      font-weight: normal;
+      letter-spacing: 0.01em;
+      color: #111;
+      margin-bottom: 6px;
+    }
+
+    .hub p {
+      font-size: 13px;
+      color: #888;
+      font-style: italic;
+    }
+
+    /* ── ARROW DOWN ── */
+    .arrow-down {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 36px;
+      color: #bbb;
+      font-size: 20px;
+      letter-spacing: -2px;
+    }
+
+    /* ── OUTCOME ── */
+    .outcome-row {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 56px;
+    }
+
+    .outcome {
+      background: #f4f4f2;
+      border-radius: 4px;
+      padding: 22px 48px;
+      text-align: center;
+      min-width: 480px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .outcome:hover { background: #eeede9; }
+
+    .outcome h2 {
+      font-size: 15px;
+      font-weight: normal;
+      color: #333;
+      margin-bottom: 6px;
+      letter-spacing: 0.01em;
+    }
+
+    .outcome p {
+      font-size: 12.5px;
+      color: #888;
+      font-style: italic;
+    }
+
+    /* ── LEGEND ── */
+    .legend {
+      display: flex;
+      gap: 28px;
+      justify-content: center;
+      margin-bottom: 64px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #888;
+      font-style: italic;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── DETAIL PANEL ── */
+    .detail-panel {
+      width: 100%;
+      max-width: 860px;
+      border-top: 1px solid #e8e8e8;
+      padding-top: 40px;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .detail-panel.visible { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .detail-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .detail-header h2 {
+      font-size: 22px;
+      font-weight: normal;
+      font-style: italic;
+      color: #111;
+      line-height: 1.3;
+    }
+
+    .detail-header .close-btn {
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      padding: 6px 14px;
+      font-family: Georgia, serif;
+      font-size: 12px;
+      color: #888;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      margin-left: 24px;
+      flex-shrink: 0;
+    }
+
+    .detail-header .close-btn:hover { border-color: #999; color: #444; }
+
+    .detail-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+    }
+
+    .detail-section h3 {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 14px;
+      font-weight: normal;
+      font-style: normal;
+      font-family: Georgia, serif;
+    }
+
+    .detail-section p {
+      font-size: 14.5px;
+      line-height: 1.75;
+      color: #333;
+      margin-bottom: 12px;
+    }
+
+    .signals-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .signals-list li {
+      font-size: 14px;
+      line-height: 1.65;
+      color: #444;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .signals-list li:last-child { border-bottom: none; }
+
+    .signals-list li::before {
+      content: '—';
+      color: #bbb;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .fix-note {
+      background: #f8f8f6;
+      border-left: 2px solid #ccc;
+      padding: 16px 20px;
+      margin-top: 20px;
+      font-size: 13.5px;
+      line-height: 1.7;
+      color: #555;
+      font-style: italic;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 12px;
+      color: #bbb;
+      font-style: italic;
+      letter-spacing: 0.03em;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Construction Operations Framework</h1>
+    <p>Five pressure points that surface at the scaling inflection point.<br>Click any node to explore the detail.</p>
+  </header>
+
+  <div class="framework">
+
+    <!-- Pressure cards -->
+    <div class="pressure-row">
+
+      <div class="pressure-card risk-operational" onclick="showDetail('visibility')">
+        <span class="indicator"></span>
+        <span class="tag">Operational risk</span>
+        <h3>Visibility gaps</h3>
+        <p>No clear view across active sites or project status in real time.</p>
+      </div>
+
+      <div class="pressure-card risk-operational" onclick="showDetail('fragmentation')">
+        <span class="indicator"></span>
+        <span class="tag">Operational risk</span>
+        <h3>Process fragmentation</h3>
+        <p>Tools and workflows scattered across teams with no unified layer.</p>
+      </div>
+
+      <div class="pressure-card risk-financial" onclick="showDetail('communication')">
+        <span class="indicator"></span>
+        <span class="tag">People risk</span>
+        <h3>Communication breakdown</h3>
+        <p>Teams operating in silos as coordination complexity outpaces structure.</p>
+      </div>
+
+      <div class="pressure-card risk-financial" onclick="showDetail('margin')">
+        <span class="indicator"></span>
+        <span class="tag">Financial risk</span>
+        <h3>Margin leakage</h3>
+        <p>Cost visibility eroding as projects scale and oversight thins.</p>
+      </div>
+
+      <div class="pressure-card risk-regulatory" onclick="showDetail('compliance')">
+        <span class="indicator"></span>
+        <span class="tag">Regulatory risk</span>
+        <h3>Compliance drift</h3>
+        <p>Regulatory requirements deprioritised under operational pressure.</p>
+      </div>
+
+    </div>
+
+    <!-- Connector SVG -->
+    <div class="connector-area">
+      <svg viewBox="0 0 860 40" preserveAspectRatio="none">
+        <!-- Five vertical drops from card centres to a horizontal line -->
+        <line x1="86"  y1="0" x2="86"  y2="28" stroke="#ccc" stroke-width="1"/>
+        <line x1="258" y1="0" x2="258" y2="28" stroke="#ccc" stroke-width="1"/>
+        <line x1="430" y1="0" x2="430" y2="28" stroke="#ccc" stroke-width="1"/>
+        <line x1="602" y1="0" x2="602" y2="28" stroke="#ccc" stroke-width="1"/>
+        <line x1="774" y1="0" x2="774" y2="28" stroke="#ccc" stroke-width="1"/>
+        <!-- Horizontal bar connecting all -->
+        <line x1="86" y1="28" x2="774" y2="28" stroke="#ccc" stroke-width="1"/>
+        <!-- Drop to hub -->
+        <line x1="430" y1="28" x2="430" y2="40" stroke="#999" stroke-width="1" marker-end="url(#arr)"/>
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="5" markerHeight="5" orient="auto">
+            <path d="M1 1 L5 9 L9 1" fill="none" stroke="#999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <!-- Hub -->
+    <div class="hub-row">
+      <div class="hub" onclick="showDetail('hub')">
+        <h2>Unified operational system</h2>
+        <p>Scalable &nbsp;·&nbsp; Consistent &nbsp;·&nbsp; Visible</p>
+      </div>
+    </div>
+
+    <!-- Arrow down -->
+    <div class="arrow-down">↓</div>
+
+    <!-- Outcome -->
+    <div class="outcome-row">
+      <div class="outcome" onclick="showDetail('outcome')">
+        <h2>Consistent execution at scale</h2>
+        <p>Quality maintained &nbsp;·&nbsp; Operational strain removed &nbsp;·&nbsp; Growth sustainable</p>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#d9562f"></div>
+        Operational risk
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#c48a00"></div>
+        Financial &amp; people risk
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#4a5fa8"></div>
+        Regulatory risk
+      </div>
+    </div>
+
+  </div><!-- /framework -->
+
+  <!-- Detail panel -->
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-header">
+      <h2 id="detail-title"></h2>
+      <button class="close-btn" onclick="closeDetail()">Close</button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-section">
+        <h3>What it looks like</h3>
+        <div id="detail-description"></div>
+      </div>
+      <div class="detail-section">
+        <h3>Warning signals</h3>
+        <ul class="signals-list" id="detail-signals"></ul>
+        <div class="fix-note" id="detail-fix"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Click any node to explore &nbsp;·&nbsp; Built for MZ COO conversation</footer>
+
+  <script>
+    const data = {
+      visibility: {
+        title: 'Visibility gaps',
+        description: `<p>When a company runs two or three projects, a site manager can hold status in their head. At ten or fifteen active sites, that breaks down completely. Leadership is increasingly flying blind — no single source of truth, no real-time view of which sites are on track and which have already slipped.</p>
+        <p>Progress becomes reported rather than observed. Updates arrive weekly or fortnightly, filtered through whoever is writing them. The gap between what is happening on site and what leadership knows is measured in days, sometimes weeks. By the time a problem surfaces, it has already compounded.</p>
+        <p>This is the first pressure point to audit — because visibility is the foundation everything else sits on. You cannot fix communication, control margins, or maintain compliance if you cannot see what is actually happening across the business.</p>`,
+        signals: [
+          'Site managers are the only source of project status',
+          'Leadership learns about delays after they happen',
+          'No dashboard or live view across active sites',
+          'Project meetings rely on self-reported updates',
+          'Resource decisions are reactive, not planned'
+        ],
+        fix: 'The fix is not more reporting. It is replacing reporting culture with monitoring culture — building systems that surface status passively, without requiring anyone to write an update.'
+      },
+      fragmentation: {
+        title: 'Process fragmentation',
+        description: `<p>Growing construction companies accumulate tools the same way they accumulate subcontractors — one project at a time, solving the immediate problem without a view to the whole. By the time the fragmentation becomes visible, teams are running on different platforms, different spreadsheets, different communication channels, and different versions of the truth.</p>
+        <p>The operational cost is invisible at first. Each team is functioning. But the overhead of translation — moving information between systems, reconciling conflicting data, chasing updates across five different tools — quietly consumes hours that should be going into delivery.</p>
+        <p>Consolidation is where the earliest leverage sits. Bringing workflows into a unified system does not require rebuilding from scratch. It requires identifying which tools are load-bearing and which are accidental, and building the operational layer that connects them.</p>`,
+        signals: [
+          'Different teams use different project management tools',
+          'No single place where all project data lives',
+          'Information has to be manually transferred between systems',
+          'Onboarding new team members takes longer than it should',
+          'The same data exists in multiple places with different values'
+        ],
+        fix: 'Consolidation is not about finding one perfect tool. It is about reducing the number of handoffs information has to make before it becomes useful to the person who needs it.'
+      },
+      communication: {
+        title: 'Communication breakdown',
+        description: `<p>At smaller scale, communication is organic. People are physically proximate, problems get resolved in conversation, and nothing important falls through the gap. As teams grow and sites multiply, that organic layer stops working — but the formal layer to replace it has not been built yet.</p>
+        <p>The result is teams that are technically connected but operationally siloed. Site managers do not know what is happening on other sites. Office teams do not have the context they need to support field operations. Decisions get made in isolation that affect people who were never in the room.</p>
+        <p>Communication breakdown does not feel like a crisis. It feels like misalignment — a steady accumulation of small misfires that erode trust and efficiency over time. By the time it is recognised as a structural problem, it has already slowed the business down significantly.</p>`,
+        signals: [
+          'The same question gets answered differently by different people',
+          'Teams find out about decisions after the fact',
+          'Escalation paths are unclear — issues sit unresolved',
+          'Meeting culture is heavy but information flow is still poor',
+          'Key people have become bottlenecks because no one else has context'
+        ],
+        fix: 'Communication problems are almost never about people. They are about the absence of a defined information architecture — who needs to know what, how it reaches them, and how quickly.'
+      },
+      margin: {
+        title: 'Margin leakage',
+        description: `<p>Margin leakage is the financial consequence of operational gaps. It rarely shows up as a single line item — it accumulates across dozens of small decisions made without full visibility: labour hours that were not tracked, material costs that were absorbed rather than charged, scope changes that were not formally logged, and inefficiencies that were absorbed by the project rather than corrected.</p>
+        <p>At smaller scale, a founder with direct site involvement catches most of this naturally. As the business grows and that personal oversight thins across more projects, the leakage accelerates — but the reporting often does not capture it clearly enough to act on.</p>
+        <p>A COO who understands construction margin knows that protecting it is not purely a finance function. It is an operations function. The controls that prevent leakage live in project management, workflow design, and change order discipline — not just in the accounts.</p>`,
+        signals: [
+          'Margin on completion consistently lower than margin at tender',
+          'Variations and scope changes often absorbed informally',
+          'Labour tracking is inconsistent across sites',
+          'No clear view of cost-to-complete on active projects',
+          'Profitability varies significantly between similar projects'
+        ],
+        fix: 'The first step is not better accounting — it is tighter operational controls upstream. When the information architecture is sound, the financial picture follows naturally.'
+      },
+      compliance: {
+        title: 'Compliance drift',
+        description: `<p>Compliance drift is the most dangerous pressure point because its consequences are the most asymmetric. The cost of maintaining compliance is predictable and manageable. The cost of a serious breach — a safety incident, a regulatory failure, a missed certification — can be existential.</p>
+        <p>As construction companies scale, compliance tends to get deprioritised under operational pressure. Not through negligence, but through distraction. The team is focused on delivery, the pipeline is full, and the administrative layer that keeps the business on the right side of regulatory requirements quietly falls behind.</p>
+        <p>A COO in construction needs to treat compliance not as a back-office function but as an operational one — embedded in project workflows, not bolted on at the end. The moment compliance becomes reactive, the risk profile of the business changes significantly.</p>`,
+        signals: [
+          'Certifications and accreditations are tracked informally',
+          'Safety documentation is completed after the fact rather than in real time',
+          'Different sites maintain compliance differently',
+          'No clear ownership of the regulatory calendar',
+          'Audits require significant retrospective effort to prepare for'
+        ],
+        fix: 'Compliance should sit inside the operational layer, not alongside it. When project workflows are properly structured, compliance documentation becomes a by-product of good operations — not an additional burden.'
+      },
+      hub: {
+        title: 'Unified operational system',
+        description: `<p>A unified operational system is not a single piece of software. It is the operational architecture that connects how a construction business actually runs — the decisions about what gets tracked, where information lives, who has access to it, and how it flows between teams and sites.</p>
+        <p>The goal is not to add complexity. It is to reduce the hidden complexity that already exists — the mental overhead, the manual reconciliation, the communication gaps, the decisions made without full context — and replace it with a system that makes execution more predictable, visible, and easier to manage at scale.</p>
+        <p>When the operational layer is right, quality does not depend on which site manager is on which project. Compliance does not depend on someone remembering. Margin does not depend on how closely the founder is watching. The business runs consistently because the system makes consistency the path of least resistance.</p>`,
+        signals: [
+          'Single source of truth for project status across all sites',
+          'Information flows without manual intervention',
+          'Teams are aligned without requiring constant oversight',
+          'Financial visibility is built into project workflows',
+          'Compliance is maintained as a natural output of operations'
+        ],
+        fix: 'The transition to a unified system rarely requires rebuilding from scratch. It requires identifying the load-bearing parts of what already exists, filling the gaps deliberately, and building the connective tissue that makes the whole thing legible.'
+      },
+      outcome: {
+        title: 'Consistent execution at scale',
+        description: `<p>The objective of operational infrastructure is not efficiency for its own sake. It is making the quality and consistency of a construction company's output independent of its size. A business that delivers exceptional work on five projects should be able to deliver the same quality on twenty — without adding proportional overhead, without relying on the same three people to hold everything together, and without the founder needing to be present on every site to maintain the standard.</p>
+        <p>That kind of scalable consistency is what separates a construction company that plateaus from one that compounds. It is built deliberately, through the operational layer — not through hiring alone, and not through the force of will of the leadership team.</p>
+        <p>The companies that reach it do not look dramatically different from the outside. The projects look the same. The quality is the same. The difference is that none of it depends on heroic effort anymore. It depends on the system.</p>`,
+        signals: [
+          'Quality is consistent regardless of which team is on the project',
+          'Growth does not require proportional increase in management overhead',
+          'Leadership makes decisions from information, not instinct',
+          'New projects onboard faster with less friction',
+          'The business is increasingly founder-independent in execution'
+        ],
+        fix: 'Consistent execution at scale is not a destination — it is a capability that gets built incrementally. Each pressure point resolved makes the next one easier to address. The work compounds.'
+      }
+    };
+
+    function showDetail(key) {
+      const d = data[key];
+      if (!d) return;
+      document.getElementById('detail-title').textContent = d.title;
+      document.getElementById('detail-description').innerHTML = d.description;
+      const ul = document.getElementById('detail-signals');
+      ul.innerHTML = d.signals.map(s => `<li>${s}</li>`).join('');
+      document.getElementById('detail-fix').textContent = d.fix;
+      const panel = document.getElementById('detail-panel');
+      panel.classList.add('visible');
+      setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    }
+
+    function closeDetail() {
+      document.getElementById('detail-panel').classList.remove('visible');
+    }
+  </script>
+
+</body>
+</html>
